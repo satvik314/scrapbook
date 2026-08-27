@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrapbook</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div class="page">
+
+    <header class="masthead">
+      <h1>Scrapbook</h1>
+      <svg class="squiggle" viewBox="0 0 120 10" aria-hidden="true">
+        <path d="M2 6 C 14 1, 22 9, 34 5 S 56 2, 68 6 S 94 9, 118 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <p class="strapline">clip it &middot; stamp it &middot; post it</p>
+    </header>
+
+    <section class="tray">
+      <div class="section-head">
+        <h2>today&rsquo;s scraps</h2>
+        <button id="newClipBtn" class="pen-btn" title="Clip a region of the current page">&#65291; new clip</button>
+      </div>
+      <p id="trayError" class="ink-warning" hidden></p>
+
+      <div id="trayEmpty" class="tray-empty">
+        <div class="empty-scrap">
+          <p>nothing clipped yet</p>
+          <p class="empty-how">press <span class="kbd" id="shortcutHint">&#8984;&#8679;S</span> on any page,<br>then draw a frame around the good part</p>
+        </div>
+      </div>
+
+      <div id="clipGrid" class="clip-grid"></div>
+      <p id="selectHint" class="margin-note" hidden>tap scraps to pick them for the poster &mdash; numbers set the stacking order</p>
+    </section>
+
+    <section class="studio">
+      <div class="section-head">
+        <h2>make a poster</h2>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">format</span>
+        <div class="chip-group" id="aspectGroup" role="radiogroup" aria-label="Poster format">
+          <button class="chip is-on" data-aspect="1:1" role="radio" aria-checked="true"><span class="chip-swatch square"></span>1:1</button>
+          <button class="chip" data-aspect="16:9" role="radio" aria-checked="false"><span class="chip-swatch wide"></span>16:9</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">background</span>
+        <div class="chip-group" id="bgGroup" role="radiogroup" aria-label="Poster background">
+          <button class="chip is-on" data-bg="purple" role="radio" aria-checked="true"><span class="chip-swatch dot purple"></span>purple</button>
+          <button class="chip" data-bg="white" role="radio" aria-checked="false"><span class="chip-swatch dot white"></span>white</button>
+        </div>
+      </div>
+
+      <label class="write-field">
+        <span class="field-label">punchline</span>
+        <input id="punchlineInput" type="text" placeholder="the one-liner that carries the post&hellip;" autocomplete="off" spellcheck="false">
+      </label>
+
+      <label class="write-field">
+        <span class="field-label">tagline</span>
+        <input id="taglineInput" type="text" value="unrot 2.0 — coming soon" autocomplete="off" spellcheck="false">
+      </label>
+
+      <div class="check-row">
+        <label class="ink-check">
+          <input type="checkbox" id="personCheck">
+          <span class="box" aria-hidden="true"></span>
+          <span>add a line-art person reacting</span>
+        </label>
+        <label class="ink-check">
+          <input type="checkbox" id="cheapCheck">
+          <span class="box" aria-hidden="true"></span>
+          <span>draft mode <em class="soft">(Nano Banana 2 Lite &mdash; cheaper)</em></span>
+        </label>
+      </div>
+
+      <details class="prompt-fold" id="promptFold">
+        <summary>the prompt <span id="customBadge" class="custom-badge" hidden>edited by hand</span></summary>
+        <textarea id="promptText" rows="9" spellcheck="false"></textarea>
+        <button id="promptReset" class="pen-btn small" hidden>rewrite from my fields</button>
+      </details>
+
+      <button id="makeBtn" class="stamp-btn">
+        <span class="stamp-face">Make&nbsp;Poster</span>
+      </button>
+      <p id="makeNote" class="margin-note center" hidden></p>
+      <p id="keyNote" class="key-note" hidden>
+        no API key yet &mdash; copy <code>env.example.js</code> to <code>env.js</code> in the extension
+        folder, paste your Gemini key, then reload the extension.
+      </p>
+    </section>
+
+    <section class="darkroom" id="darkroom" hidden>
+      <div class="section-head">
+        <h2>fresh print</h2>
+      </div>
+      <div class="printer-slot" aria-hidden="true"></div>
+      <figure class="print-frame">
+        <div class="print-window" id="printWindow">
+          <div id="printing" class="printing" hidden>
+            <div class="printing-sheen"></div>
+            <p>printing<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+          </div>
+          <img id="posterImg" alt="Generated poster">
+        </div>
+        <figcaption id="printCaption" class="print-caption"></figcaption>
+      </figure>
+      <p id="genError" class="ink-warning" hidden></p>
+      <div class="print-actions">
+        <button id="downloadBtn" class="pen-btn strong">&#8681; download png</button>
+        <button id="regenBtn" class="pen-btn">&#8635; regenerate</button>
+      </div>
+    </section>
+
+    <section class="history" id="historySection" hidden>
+      <div class="section-head">
+        <h2>past prints</h2>
+      </div>
+      <div id="historyStrip" class="history-strip"></div>
+    </section>
+
+    <footer class="colophon">
+      <p>everything stays on this machine &mdash; clips in local storage, key in <code>env.js</code></p>
+    </footer>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+</html>

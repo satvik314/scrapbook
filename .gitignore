@@ -1,0 +1,5 @@
+# Local API key config — never commit
+extension/env.js
+
+.DS_Store
+node_modules/

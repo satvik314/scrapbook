@@ -1,0 +1,681 @@
+/* ==========================================================================
+   Scrapbook side panel — a paper notebook, not a SaaS tool.
+   Cream paper, ruled lines, washi tape, ink-blue accent, Caveat handwriting.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Caveat";
+  src: url("../fonts/caveat-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --paper: #fbf7ee;
+  --paper-deep: #f3ecdb;
+  --card: #fffdf8;
+  --ink: #2b2620;
+  --ink-soft: #7a7160;
+  --blue: #2f4bc0;          /* the one accent, used with discipline */
+  --blue-soft: rgba(47, 75, 192, 0.12);
+  --purple: #9d7fff;        /* brand purple — swatches & tape only */
+  --warn: #b3402a;
+  --tape: rgba(157, 127, 255, 0.32);
+  --tape-2: rgba(240, 220, 150, 0.55);
+  --rule: rgba(47, 75, 192, 0.075);
+  --shadow-soft: 0 1px 3px rgba(74, 60, 34, 0.14), 0 10px 22px -12px rgba(74, 60, 34, 0.3);
+  /* hand-drawn wobble for borders */
+  --sketch: 255px 18px 225px 18px / 18px 225px 18px 255px;
+  --sketch-sm: 160px 12px 150px 12px / 12px 150px 12px 160px;
+  --hand: "Caveat", "Segoe Script", cursive;
+  --body: "Seravek", "Gill Sans", "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+  min-height: 100%;
+  font-family: var(--body);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* margin line · ruled lines · paper grain */
+  background-image:
+    linear-gradient(to right, transparent 0 26px, rgba(179, 64, 42, 0.12) 26px 27px, transparent 27px),
+    repeating-linear-gradient(to bottom, transparent 0 27px, var(--rule) 27px 28px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  background-attachment: local, local, local;
+}
+
+.page {
+  padding: 20px 18px 26px 38px; /* extra left room past the margin line */
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+::selection { background: var(--blue-soft); }
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+
+.masthead { margin-bottom: 20px; }
+
+.masthead h1 {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  transform: rotate(-1.2deg);
+}
+
+.squiggle {
+  display: block;
+  width: 126px;
+  height: 10px;
+  margin: 2px 0 6px 2px;
+  color: var(--blue);
+}
+
+.strapline {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+
+section { margin-bottom: 30px; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.section-head h2 {
+  font-family: var(--hand);
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.1;
+  transform: rotate(-0.6deg);
+}
+
+.margin-note {
+  font-family: var(--hand);
+  font-size: 15px;
+  color: var(--ink-soft);
+  transform: rotate(-0.4deg);
+  margin-top: 10px;
+}
+.margin-note.center { text-align: center; }
+
+/* --------------------------------------------------------------------------
+   Buttons — pen-drawn
+   -------------------------------------------------------------------------- */
+
+.pen-btn {
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--blue);
+  background: var(--card);
+  border: 1.6px solid var(--blue);
+  border-radius: var(--sketch-sm);
+  padding: 5px 12px 6px;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  box-shadow: 0 1px 0 rgba(47, 75, 192, 0.25);
+}
+.pen-btn:hover { background: var(--blue-soft); }
+.pen-btn:active { transform: translateY(1px) rotate(-0.4deg); box-shadow: none; }
+.pen-btn.strong { background: var(--blue); color: var(--paper); }
+.pen-btn.strong:hover { background: #263da0; }
+.pen-btn.small { font-size: 11px; padding: 3px 9px 4px; }
+.pen-btn:disabled { opacity: 0.45; cursor: default; }
+
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Tray — scraps taped to the page
+   -------------------------------------------------------------------------- */
+
+.tray-empty { padding: 4px 0 2px; }
+
+.empty-scrap {
+  position: relative;
+  background: var(--card);
+  border: 1.6px dashed rgba(43, 38, 32, 0.3);
+  border-radius: var(--sketch);
+  padding: 22px 18px;
+  text-align: center;
+  transform: rotate(-0.8deg);
+}
+.empty-scrap::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 52px;
+  height: 17px;
+  margin-left: -26px;
+  background: var(--tape);
+  transform: rotate(-3deg);
+}
+.empty-scrap p:first-child {
+  font-family: var(--hand);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.empty-how { font-size: 12px; color: var(--ink-soft); }
+
+.kbd {
+  display: inline-block;
+  border: 1px solid rgba(43, 38, 32, 0.35);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--card);
+  padding: 0 5px 1px;
+  font-size: 11px;
+  color: var(--ink);
+}
+
+.clip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 14px;
+  padding-top: 8px;
+}
+
+.scrap {
+  --rot: -1.6deg;
+  position: relative;
+  background: #fff;
+  padding: 5px 5px 6px;
+  box-shadow: var(--shadow-soft);
+  transform: rotate(var(--rot));
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  border-radius: 1px;
+}
+.scrap:nth-child(2n) { --rot: 1.8deg; }
+.scrap:nth-child(3n) { --rot: 0.7deg; }
+.scrap:nth-child(4n) { --rot: -1.1deg; }
+
+.scrap:hover { transform: rotate(var(--rot)) translateY(-2px) scale(1.015); }
+
+/* washi tape corners */
+.scrap::before, .scrap::after {
+  content: "";
+  position: absolute;
+  width: 38px;
+  height: 14px;
+  background: var(--tape);
+  top: -7px;
+  pointer-events: none;
+  z-index: 0;
+}
+.scrap::before { left: -9px; transform: rotate(-42deg); }
+.scrap::after { right: -9px; transform: rotate(42deg); background: var(--tape-2); }
+
+.scrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--paper-deep);
+}
+
+.scrap .meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 2px 0;
+}
+.scrap .domain {
+  font-family: var(--hand);
+  font-size: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scrap .when {
+  font-size: 9.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.scrap.is-selected {
+  outline: 2.5px solid var(--blue);
+  outline-offset: 3px;
+  transform: rotate(0deg) scale(1.02);
+}
+
+.pick-badge {
+  position: absolute;
+  z-index: 3;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: var(--paper);
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(47, 75, 192, 0.4);
+  transform: rotate(6deg);
+}
+
+.scrap-del {
+  position: absolute;
+  z-index: 3;
+  top: -8px;
+  left: -8px;
+  width: 20px;
+  height: 20px;
+  border: 1.4px solid rgba(43, 38, 32, 0.5);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 130ms ease, transform 130ms ease;
+}
+.scrap:hover .scrap-del { opacity: 1; }
+.scrap-del:hover { transform: scale(1.12); color: var(--warn); border-color: var(--warn); }
+
+/* new clip drops onto the page */
+@keyframes scrap-drop {
+  0% { transform: translateY(-34px) rotate(calc(var(--rot) - 7deg)) scale(1.06); opacity: 0; }
+  60% { transform: translateY(3px) rotate(calc(var(--rot) + 1.5deg)) scale(1.01); opacity: 1; }
+  100% { transform: translateY(0) rotate(var(--rot)) scale(1); opacity: 1; }
+}
+.scrap.is-new { animation: scrap-drop 460ms cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+
+/* --------------------------------------------------------------------------
+   Studio — the poster form
+   -------------------------------------------------------------------------- */
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.field-label {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  min-width: 76px;
+}
+
+.chip-group { display: flex; gap: 8px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--card);
+  border: 1.5px solid rgba(43, 38, 32, 0.35);
+  border-radius: var(--sketch-sm);
+  padding: 4px 11px 5px;
+  cursor: pointer;
+  transition: all 130ms ease;
+}
+.chip:hover { border-color: var(--blue); }
+.chip.is-on {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--paper);
+  transform: rotate(-1deg);
+}
+
+.chip-swatch { display: inline-block; border: 1.4px solid currentColor; }
+.chip-swatch.square { width: 11px; height: 11px; }
+.chip-swatch.wide { width: 16px; height: 9px; }
+.chip-swatch.dot { width: 11px; height: 11px; border-radius: 50%; }
+.chip-swatch.purple { background: var(--purple); border-color: rgba(0,0,0,0.15); }
+.chip-swatch.white { background: #fff; border-color: rgba(0,0,0,0.3); }
+.chip.is-on .chip-swatch.purple, .chip.is-on .chip-swatch.white { border-color: rgba(255,255,255,0.6); }
+
+.write-field {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.write-field input {
+  flex: 1;
+  font-family: var(--hand);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1.6px solid rgba(43, 38, 32, 0.28);
+  border-radius: 0;
+  padding: 1px 2px 3px;
+  transition: border-color 130ms ease;
+}
+.write-field input::placeholder { color: rgba(122, 113, 96, 0.65); font-weight: 400; }
+.write-field input:focus { outline: none; border-bottom-color: var(--blue); }
+
+.check-row { margin: 14px 0 6px; display: grid; gap: 8px; }
+
+.ink-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 12.5px;
+  user-select: none;
+}
+.ink-check .soft { color: var(--ink-soft); font-style: normal; font-size: 11.5px; }
+.ink-check input { position: absolute; opacity: 0; pointer-events: none; }
+.ink-check .box {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1.7px solid rgba(43, 38, 32, 0.55);
+  border-radius: 5px 4px 6px 4px / 4px 6px 4px 5px;
+  background: var(--card);
+  position: relative;
+  transition: border-color 130ms ease;
+}
+.ink-check input:checked + .box { border-color: var(--blue); }
+.ink-check input:checked + .box::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: -4px;
+  width: 14px;
+  height: 12px;
+  border: solid var(--blue);
+  border-width: 0 2.6px 2.6px 0;
+  transform: rotate(38deg) skewX(-8deg);
+  border-radius: 1px;
+}
+.ink-check input:focus-visible + .box { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* prompt fold */
+.prompt-fold {
+  margin: 14px 0 4px;
+  border: 1.5px dashed rgba(43, 38, 32, 0.3);
+  border-radius: var(--sketch-sm);
+  background: rgba(255, 253, 248, 0.7);
+  padding: 8px 12px;
+}
+.prompt-fold summary {
+  font-family: var(--hand);
+  font-size: 17px;
+  cursor: pointer;
+  color: var(--ink);
+  list-style-position: outside;
+}
+.prompt-fold summary::marker { color: var(--blue); }
+.prompt-fold textarea {
+  width: 100%;
+  margin-top: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid rgba(43, 38, 32, 0.2);
+  border-radius: 4px;
+  padding: 8px 9px;
+  resize: vertical;
+}
+.prompt-fold textarea:focus { outline: none; border-color: var(--blue); }
+.custom-badge {
+  font-family: var(--body);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  background: var(--blue);
+  border-radius: 3px;
+  padding: 1px 6px 2px;
+  margin-left: 6px;
+  vertical-align: 2px;
+}
+#promptReset { margin-top: 8px; }
+
+/* the rubber stamp */
+.stamp-btn {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  background: transparent;
+  border: 3px solid var(--blue);
+  border-radius: var(--sketch);
+  color: var(--blue);
+  font-family: var(--body);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 13px 10px 14px;
+  cursor: pointer;
+  transform: rotate(-0.5deg);
+  box-shadow: 0 4px 0 -1px rgba(47, 75, 192, 0.3);
+  transition: transform 100ms ease, box-shadow 100ms ease, opacity 200ms ease;
+}
+.stamp-btn:hover { background: var(--blue-soft); }
+.stamp-btn:active, .stamp-btn.is-stamping {
+  transform: rotate(-0.5deg) translateY(4px) scale(0.985);
+  box-shadow: 0 0 0 rgba(47, 75, 192, 0.3);
+}
+.stamp-btn:disabled { opacity: 0.5; cursor: default; }
+
+@keyframes stamp-thunk {
+  0% { transform: rotate(-0.5deg) translateY(0) scale(1); }
+  35% { transform: rotate(0.6deg) translateY(5px) scale(0.97); }
+  100% { transform: rotate(-0.5deg) translateY(0) scale(1); }
+}
+.stamp-btn.did-stamp { animation: stamp-thunk 320ms ease both; }
+
+.key-note {
+  margin-top: 12px;
+  position: relative;
+  background: #fdf4cf;
+  border-radius: 2px;
+  box-shadow: var(--shadow-soft);
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #5c5133;
+  transform: rotate(0.7deg);
+}
+.key-note::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 18px;
+  width: 44px;
+  height: 15px;
+  background: var(--tape);
+  transform: rotate(-4deg);
+}
+.key-note code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.ink-warning {
+  margin: 10px 0;
+  color: var(--warn);
+  font-size: 12.5px;
+  background: rgba(179, 64, 42, 0.07);
+  border: 1.4px dashed rgba(179, 64, 42, 0.4);
+  border-radius: var(--sketch-sm);
+  padding: 8px 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Darkroom — the fresh print
+   -------------------------------------------------------------------------- */
+
+.printer-slot {
+  width: 72%;
+  height: 7px;
+  margin: 0 auto 2px;
+  background: var(--ink);
+  border-radius: 4px;
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+.print-frame {
+  background: #fff;
+  padding: 9px 9px 8px;
+  margin: 10px 4px 12px;
+  box-shadow: var(--shadow-soft);
+  transform: rotate(0.5deg);
+}
+
+.print-window {
+  overflow: hidden;
+  background: var(--paper-deep);
+}
+
+.print-window img { display: block; width: 100%; height: auto; }
+.print-window img:not([src]) { display: none; }
+
+@keyframes print-out {
+  from { transform: translateY(-102%); }
+  to { transform: translateY(0); }
+}
+.print-window.is-printing-out img {
+  animation: print-out 950ms cubic-bezier(0.3, 0.9, 0.3, 1) both;
+}
+
+.print-caption {
+  font-family: var(--hand);
+  font-size: 16px;
+  color: var(--ink-soft);
+  text-align: center;
+  padding-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.printing[hidden] { display: none !important; }
+.printing {
+  aspect-ratio: 1 / 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.printing.wide { aspect-ratio: 16 / 9; }
+.printing p {
+  font-family: var(--hand);
+  font-size: 22px;
+  color: var(--ink-soft);
+  z-index: 1;
+}
+.printing .dots span {
+  animation: dot-blink 1.2s infinite;
+  display: inline-block;
+}
+.printing .dots span:nth-child(2) { animation-delay: 0.2s; }
+.printing .dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-blink { 0%, 60%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+
+.printing-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.55) 48%, transparent 62%);
+  background-size: 240% 100%;
+  animation: sheen 1.6s ease-in-out infinite;
+}
+@keyframes sheen { from { background-position: 130% 0; } to { background-position: -60% 0; } }
+
+.print-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------------------
+   History strip
+   -------------------------------------------------------------------------- */
+
+.history-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 8px 2px 12px;
+}
+
+.h-print {
+  flex: none;
+  width: 76px;
+  background: #fff;
+  padding: 3px 3px 4px;
+  box-shadow: 0 1px 3px rgba(74, 60, 34, 0.2);
+  cursor: pointer;
+  transform: rotate(-1.4deg);
+  transition: transform 130ms ease;
+  border: none;
+}
+.h-print:nth-child(2n) { transform: rotate(1.6deg); }
+.h-print:hover { transform: rotate(0deg) scale(1.06); }
+.h-print img { display: block; width: 100%; height: auto; }
+.h-print.is-active { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* --------------------------------------------------------------------------
+   Colophon & scrollbar
+   -------------------------------------------------------------------------- */
+
+.colophon {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.colophon code { font-size: 10px; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(43, 38, 32, 0.18);
+  border-radius: 6px;
+  border: 2px solid var(--paper);
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(43, 38, 32, 0.3); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
