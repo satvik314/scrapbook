@@ -35,27 +35,41 @@ function isInjectable(tab) {
 }
 
 async function startCapture(tab) {
+  // Open the panel first, synchronously with the gesture — even if the
+  // injection below fails, the user should land somewhere with feedback.
+  if (tab && tab.windowId != null) {
+    chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {});
+  }
   if (!tab) {
     const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     tab = active;
+    if (tab && tab.windowId != null) chrome.sidePanel.open({ windowId: tab.windowId }).catch(() => {});
   }
   if (!isInjectable(tab)) {
     flashBadge("✕", "#B3402A");
-    return;
-  }
-  // Must be called while the user gesture is still "fresh" — before any long
-  // async work — or Chrome rejects sidePanel.open().
-  try {
-    await chrome.sidePanel.open({ windowId: tab.windowId });
-  } catch (e) {
-    // Older Chrome or gesture expired — capture still proceeds.
+    return recordError("This page can't be clipped — Chrome's own pages and the Web Store are off-limits. Switch to a normal website tab and try again.");
   }
   try {
     await chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["content/capture.css"] });
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content/capture.js"] });
+    return { ok: true };
   } catch (e) {
     flashBadge("✕", "#B3402A");
+    const raw = String(e && e.message || e);
+    const friendly = /cannot access|permission/i.test(raw)
+      ? "Chrome wouldn't let me touch that tab. Clipping needs a direct gesture on the page — press the keyboard shortcut or click the Scrapbook toolbar icon while that tab is focused (the panel's button only works on tabs you've already clipped from)."
+      : `Couldn't start the clipper: ${raw}`;
+    return recordError(friendly);
   }
+}
+
+// Surface failures in the side panel: the tray watches this storage key, so
+// silent breakage becomes a visible note instead of nothing happening.
+async function recordError(message) {
+  try {
+    await chrome.storage.local.set({ scrapbook_last_error: { message, ts: Date.now() } });
+  } catch (e) { /* storage broken — nothing left to report through */ }
+  return { ok: false, error: message };
 }
 
 function flashBadge(text, color) {
@@ -72,17 +86,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === "region-selected") {
     handleRegion(msg, sender)
       .then(() => sendResponse({ ok: true }))
-      .catch((err) => sendResponse({ ok: false, error: String(err && err.message || err) }));
+      .catch(async (err) => {
+        const res = await recordError("Capture failed: " + String(err && err.message || err));
+        sendResponse(res);
+      });
     return true; // async response
   }
   if (msg && msg.type === "start-capture") {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(([tab]) => {
-      if (!isInjectable(tab)) {
-        sendResponse({ ok: false, error: "This page can't be clipped (Chrome pages and the Web Store are off-limits). Switch to a normal tab first." });
-        return;
-      }
-      startCapture(tab).then(() => sendResponse({ ok: true }));
-    });
+    startCapture(undefined).then(sendResponse);
     return true;
   }
   if (msg && msg.type === "get-status") {
@@ -147,6 +158,7 @@ async function handleRegion(msg, sender) {
   const { scrapbook_clips = [] } = await chrome.storage.local.get("scrapbook_clips");
   const clips = [clip, ...scrapbook_clips].slice(0, MAX_CLIPS);
   await setWithQuotaFallback({ scrapbook_clips: clips });
+  chrome.storage.local.remove("scrapbook_last_error");
   flashBadge("✓", "#5A8F5E");
 }
 

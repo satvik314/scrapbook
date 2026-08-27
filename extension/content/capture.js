@@ -88,7 +88,13 @@
             vh: window.innerHeight
           },
           (res) => {
-            if (!chrome.runtime.lastError && res && res.ok) showToast();
+            if (chrome.runtime.lastError) {
+              showToast("Scrapbook couldn't hear back from Chrome — reload the extension and try again.", true);
+            } else if (res && res.ok) {
+              showToast("Clipped to Scrapbook ✓", false);
+            } else {
+              showToast((res && res.error) || "Capture failed — check the Scrapbook panel.", true);
+            }
           }
         );
       });
@@ -110,13 +116,14 @@
     window.removeEventListener("keydown", onKeyDown, true);
   }
 
-  function showToast() {
+  function showToast(text, isError) {
     const toast = document.createElement("div");
-    toast.className = "scrapbook-cap-toast";
-    toast.textContent = "Clipped to Scrapbook ✓";
+    toast.className = "scrapbook-cap-toast" + (isError ? " scrapbook-cap-error" : "");
+    toast.textContent = text;
     document.documentElement.appendChild(toast);
-    setTimeout(() => toast.classList.add("scrapbook-cap-fade"), 1100);
-    setTimeout(() => toast.remove(), 1500);
+    const life = isError ? 4200 : 1100;
+    setTimeout(() => toast.classList.add("scrapbook-cap-fade"), life);
+    setTimeout(() => toast.remove(), life + 400);
   }
 
   root.addEventListener("mousedown", onMouseDown, true);

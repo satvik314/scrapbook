@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Scrapbook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Clip pieces of the web into a paper scrapbook, then turn them into share-ready AI posters for Instagram and X.",
   "permissions": ["activeTab", "scripting", "storage", "sidePanel"],
   "host_permissions": ["https://generativelanguage.googleapis.com/*"],

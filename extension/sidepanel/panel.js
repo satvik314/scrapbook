@@ -66,8 +66,10 @@ async function init() {
   const store = await chrome.storage.local.get([
     "scrapbook_clips",
     "scrapbook_posters",
-    "scrapbook_settings"
+    "scrapbook_settings",
+    "scrapbook_last_error"
   ]);
+  showTrayError(store.scrapbook_last_error);
   state.clips = store.scrapbook_clips || [];
   state.posters = store.scrapbook_posters || [];
   state.knownClipIds = new Set(state.clips.map((c) => c.id));
@@ -106,6 +108,17 @@ function onStorageChanged(changes, area) {
     state.posters = changes.scrapbook_posters.newValue || [];
     renderHistory();
   }
+  if (changes.scrapbook_last_error) {
+    showTrayError(changes.scrapbook_last_error.newValue);
+  }
+}
+
+function showTrayError(err) {
+  // only surface reasonably fresh failures — a stale note from last week
+  // shouldn't greet you on open
+  const fresh = err && err.message && Date.now() - (err.ts || 0) < 10 * 60 * 1000;
+  el.trayError.textContent = fresh ? err.message : "";
+  el.trayError.hidden = !fresh;
 }
 
 function saveSettings() {

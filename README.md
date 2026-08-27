@@ -46,6 +46,29 @@ posters are kept in a history strip.
 `activeTab` grant your click/shortcut provides, so the extension has no standing access
 to any site.
 
+## Troubleshooting
+
+**"I clipped something but I don't see it."** Clips are saved inside the extension's
+`chrome.storage.local` (browser profile storage — not a file on disk). The only place
+they appear is the side panel tray. The panel should open by itself when you capture;
+if it didn't, open it manually: click the **side panel icon** in Chrome's toolbar (next
+to the address bar) and pick **Scrapbook** from the dropdown, or right-click the
+Scrapbook toolbar icon → **Open side panel**. Nothing is written to disk until you hit
+Download PNG.
+
+**The shortcut does nothing.** Chrome silently drops an extension shortcut if another
+extension already claimed it. Go to `chrome://extensions/shortcuts`, find Scrapbook →
+"Clip a region of the page", and (re)assign the key. The toolbar icon always works.
+
+**The panel's "+ new clip" button says it can't touch the tab.** Chrome only grants
+page access on a *direct* gesture — the keyboard shortcut or the toolbar icon click.
+The panel button works on tabs you've already clipped from once.
+
+**Still stuck?** Any capture failure now shows as a note on the page and in the tray.
+For the raw error: `chrome://extensions` → Scrapbook → **service worker** link → check
+the console. After editing `env.js`, always hit the ↻ reload button on the extension
+card.
+
 ## Layout
 
 ```
